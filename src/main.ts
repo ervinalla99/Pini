@@ -157,24 +157,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Function to isolate the selected fragment
 async function isolateFragment() {
+    // Retrieve the FragmentManager
+    const fragmentManager = await viewer.tools.get(OBC.FragmentManager);
 
-   // Retrieve the FragmentManager
-  const fragmentManager = await viewer.tools.get(OBC.FragmentManager);
+    // Retrieve all fragments from the FragmentManager
+    const allFragments = fragmentManager.list;
 
-  // Retrieve all fragments from the FragmentManager
-  const allFragments = fragmentManager.list;
-  // Iterate over each fragment
-  for (const fragmentId in allFragments) {
-      // Check if the fragment is hidden
+    // Hide all fragments
+    for (const fragmentId in allFragments) {
+        const fragment = allFragments[fragmentId];
+        if (fragment.setVisibility) {
+            await fragment.setVisibility(false);  // Assuming setVisibility is async
+        }
+    }
 
-  // Show the fragment if it's hidden
-      const fragment = allFragments[fragmentId];
-      // If the fragment has a method to toggle visibility, use it
-      if (fragment.setVisibility) {
-          fragment.setVisibility(false);
-      }
+    // Simulate two clicks on the toggle button to show the selected fragment
+    const toggleButton = document.getElementById('toggleButton');
+    if (toggleButton) {
+        // First click - toggles the visibility of the selected fragment
+        toggleButton.click();
+        // Wait for the DOM to update
+        await new Promise(resolve => setTimeout(resolve, 0));
+        // Second click - sets the fragment back to its original state
+        toggleButton.click();
+    } else {
+        console.error('Button with ID "toggleButton" not found.');
+    }
 }
-}
+
+
+
 // Add event listener for the isolate button
 document.addEventListener('DOMContentLoaded', () => {
   const isolateButton = document.getElementById('isolateButton');
@@ -210,21 +222,23 @@ window.addEventListener("thatOpen", async (event: any) => {
 });
 
 // Create the buttons
+
+
 const toggleButton = new OBC.Button(viewer, {
   tooltip: "Toggle visibility",
-  iconURL: "C:/Users/Ervin.Alla/Downloads/sharepoint-exercise/sharepoint-exercise/viewericonLogo.png",
 });
 
 const showAllButton = new OBC.Button(viewer, {
   tooltip: "Show all hidden fragments",
-  iconURL: "C:/Users/Ervin.Alla/Downloads/sharepoint-exercise/sharepoint-exercise/viewericonLogo.png",
 });
 
 const isolateButton = new OBC.Button(viewer, {
   tooltip: "Isolate fragments",
-  iconURL: "C:/Users/Ervin.Alla/Downloads/sharepoint-exercise/sharepoint-exercise/viewericonLogo.png",
 });
-
+// Set the text content of the buttons
+toggleButton.domElement.textContent = "Hide";
+showAllButton.domElement.textContent = "Show All";
+isolateButton.domElement.textContent = "Isolate";
 // Add the buttons to the mainToolbar
 mainToolbar.addChild(toggleButton, showAllButton, isolateButton);
 
