@@ -8,16 +8,32 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
     />
-    
-    <script type="module" crossorigin src="/assets/index-00426608.js"></script>
-    <link rel="stylesheet" href="/assets/index-559de63d.css">
+    <script type="module" crossorigin src="assets/index-00426608.js"></script>
+    <link rel="stylesheet" href="assets/index-559de63d.css">
+    <style>
+      .logo-container {
+          position: fixed; /* Fixed position to the viewport */
+          right: 10px; /* Align to the right side */
+          bottom: 10px; /* Align to the bottom side */
+          z-index: 1000; /* Higher index to ensure it's on top */
+      }
+
+      .logo-container img {
+          display: block; /* Remove any default inline spacing */
+          max-width: 200px; /* Maximum width for the logo */
+          max-height: 200px; /* Maximum height for the logo */
+      }
+    </style>
   </head>
   <body>
     <div
       id="webinar-sharepoint-viewer"
       style="width: 100vw; height: 100vh"
     ></div>
-    
+    <!-- Logo at the bottom right corner -->
+    <div class="logo-container">
+      <img src="logo.png" alt="Viewer Logo"/>
+    </div>
     <button id="toggleButton" style="display: none;">Toggle Fragment Visibility</button>
   <button id="showAllButton" style="display: none;">Show All Hidden Fragments</button>
   <button id="isolateButton" style="display: none;">Isolate</button>
