@@ -59,8 +59,145 @@ const mainToolbar = new OBC.Toolbar(viewer);
 mainToolbar.addChild(
   ifcLoader.uiElement.get("main"),
   propertiesProcessor.uiElement.get("main")
-);
+);    
 viewer.ui.addToolbar(mainToolbar);
+
+// Variable to store the last highlighted fragment's ID map
+let lastHighlightedFragmentIdMap: { [fragmentId: string]: any } = {};
+
+
+// Function to toggle the visibility of a selected fragment
+async function toggleFragmentVisibility() {
+    if (Object.keys(lastHighlightedFragmentIdMap).length === 0) {
+        console.log("No fragment selected to toggle visibility.");
+        return;
+    }
+
+    // Get FragmentHider instance
+    const hider = await viewer.tools.get(OBC.FragmentHider);
+
+    // Determine the current visibility state and toggle it
+    const fragmentId = Object.keys(lastHighlightedFragmentIdMap)[0];
+    const isVisible = lastHighlightedFragmentIdMap[fragmentId].isVisible;
+    lastHighlightedFragmentIdMap[fragmentId].isVisible = !isVisible;
+
+    // Apply the visibility change
+    hider.set(!isVisible, lastHighlightedFragmentIdMap);
+}
+
+// Event handler for when a fragment is highlighted
+highlighter.events.select.onHighlight.add((selection) => {
+    // Assuming 'selection' is the FragmentIdMap returned by the highlight method
+    lastHighlightedFragmentIdMap = selection;
+    // Adding visibility state to the FragmentIdMap
+    for (const fragmentId in lastHighlightedFragmentIdMap) {
+        lastHighlightedFragmentIdMap[fragmentId].isVisible = true; // Assuming initial state is visible
+    }
+});
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleButton = document.getElementById('toggleButton');
+  if (toggleButton) {
+      toggleButton.addEventListener('click', toggleFragmentVisibility);
+  } else {
+      console.error('Button with ID "toggleButton" not found.');
+  }
+
+  // Add event listener for keydown events
+  document.addEventListener('keydown', handleKeyDown);
+});
+
+// Function to handle keydown events
+function handleKeyDown(event: KeyboardEvent) {
+  // Check if the pressed key is "H"
+  if (event.key === "h" || event.key === "H") {
+      // Trigger the click event of the toggleButton
+      const toggleButton = document.getElementById('toggleButton');
+      if (toggleButton) {
+          toggleButton.click();
+      }
+  }
+}
+async function showAllHiddenFragments() {
+  // Get FragmentHider instance
+
+  // Retrieve the FragmentManager
+  const fragmentManager = await viewer.tools.get(OBC.FragmentManager);
+
+  // Retrieve all fragments from the FragmentManager
+  const allFragments = fragmentManager.list;
+  // Iterate over each fragment
+  for (const fragmentId in allFragments) {
+      // Check if the fragment is hidden
+
+  // Show the fragment if it's hidden
+      const fragment = allFragments[fragmentId];
+      // If the fragment has a method to toggle visibility, use it
+      if (fragment.setVisibility) {
+          fragment.setVisibility(true);
+      }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleButton = document.getElementById('toggleButton');
+    if (toggleButton) {
+        toggleButton.addEventListener('click', toggleFragmentVisibility);
+    } else {
+        console.error('Button with ID "toggleButton" not found.');
+    }
+
+    // Button to show all hidden fragments
+    const showAllButton = document.getElementById('showAllButton');
+    if (showAllButton) {
+        showAllButton.addEventListener('click', showAllHiddenFragments);
+    } else {
+        console.error('Button with ID "showAllButton" not found.');
+    }
+});
+
+// Function to isolate the selected fragment
+async function isolateFragment() {
+
+   // Retrieve the FragmentManager
+  const fragmentManager = await viewer.tools.get(OBC.FragmentManager);
+
+  // Retrieve all fragments from the FragmentManager
+  const allFragments = fragmentManager.list;
+  // Iterate over each fragment
+  for (const fragmentId in allFragments) {
+      // Check if the fragment is hidden
+
+  // Show the fragment if it's hidden
+      const fragment = allFragments[fragmentId];
+      // If the fragment has a method to toggle visibility, use it
+      if (fragment.setVisibility) {
+          fragment.setVisibility(false);
+      }
+}
+}
+// Add event listener for the isolate button
+document.addEventListener('DOMContentLoaded', () => {
+  const isolateButton = document.getElementById('isolateButton');
+  if (isolateButton) {
+      console.log("Isolate button found"); // Add this line for debugging
+      isolateButton.addEventListener('click', () => {
+          isolateFragment();
+      });
+
+      // Add keydown event listener
+      document.addEventListener('keydown', (event) => {
+          // Convert the pressed key to lowercase for comparison
+          const keyPressed = event.key.toLowerCase();
+          // Check if the pressed key is "i"
+          if (keyPressed === 'i') {
+              // Trigger click event on isolate button
+              isolateButton.click();
+          }
+      });
+  } else {
+      console.error('Button with ID "isolateButton" not found.');
+  }
+});
 
 window.addEventListener("thatOpen", async (event: any) => {
   const { name, payload } = event.detail;
@@ -71,3 +208,29 @@ window.addEventListener("thatOpen", async (event: any) => {
     scene.add(model);
   }
 });
+
+// Create the buttons
+const toggleButton = new OBC.Button(viewer, {
+  tooltip: "Toggle visibility",
+  iconURL: "C:/Users/Ervin.Alla/Downloads/sharepoint-exercise/sharepoint-exercise/viewericonLogo.png",
+});
+
+const showAllButton = new OBC.Button(viewer, {
+  tooltip: "Show all hidden fragments",
+  iconURL: "C:/Users/Ervin.Alla/Downloads/sharepoint-exercise/sharepoint-exercise/viewericonLogo.png",
+});
+
+const isolateButton = new OBC.Button(viewer, {
+  tooltip: "Isolate fragments",
+  iconURL: "C:/Users/Ervin.Alla/Downloads/sharepoint-exercise/sharepoint-exercise/viewericonLogo.png",
+});
+
+// Add the buttons to the mainToolbar
+mainToolbar.addChild(toggleButton, showAllButton, isolateButton);
+
+// Add the mainToolbar to the viewer's UI
+viewer.ui.addToolbar(mainToolbar);
+toggleButton.onClick.add(toggleFragmentVisibility);
+showAllButton.onClick.add(showAllHiddenFragments);
+isolateButton.onClick.add(isolateFragment);
+// Set the text of the buttons
