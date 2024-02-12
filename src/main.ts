@@ -83,6 +83,11 @@ async function toggleFragmentVisibility() {
 
     // Apply the visibility change
     hider.set(!isVisible, lastHighlightedFragmentIdMap);
+    const fragmentElement = document.getElementById(fragmentId);
+    if (fragmentElement) {
+        fragmentElement.classList.remove('highlight');
+    }
+    highlighter.clear();
 }
 
 // Event handler for when a fragment is highlighted
