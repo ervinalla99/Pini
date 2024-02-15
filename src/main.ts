@@ -46,25 +46,145 @@ highlighter.events.select.onClear.add(() => {
 });
 
 ifcLoader.onIfcLoaded.add(async (model) => {
+  console.log("Model loaded:", model);
+
   propertiesProcessor.process(model);
   highlighter.events.select.onHighlight.add((selection) => {
-    const fragmentID = Object.keys(selection)[0];
-    const expressID = Number([...selection[fragmentID]][0]);
-    propertiesProcessor.renderProperties(model, expressID);
+      const fragmentID = Object.keys(selection)[0];
+      const expressID = Number([...selection[fragmentID]][0]);
+      propertiesProcessor.renderProperties(model, expressID);
   });
+
   highlighter.update();
+ 
+  onPropertiesLoaded(model)
+  
 });
+
+import { FragmentsGroup } from "bim-fragment"
+
+async function onPropertiesLoaded(model: FragmentsGroup){
+  //create properties for property window
+  try{
+      classifier.byModel(model.name, model)
+      classifier.byStorey(model)
+      classifier.byEntity(model)
+      const tree = await createModelTree()
+      await classificationWindow.slots.content.dispose(true)
+      classificationWindow.addChild(tree)
+
+      
+     
+  } catch (error){
+      alert(error)
+  }
+}
+async function createModelTree(){
+  const fragmentTree = new OBC.FragmentTree(viewer)
+  await fragmentTree.init()
+  await fragmentTree.update(["model","storeys", "entities"]) //
+  fragmentTree.onHovered.add((fragmentMap) =>{
+      highlighter.highlightByID("hover", fragmentMap)
+  })
+  fragmentTree.onSelected.add((fragmentMap)=>{
+      highlighter.highlightByID("select", fragmentMap)
+  })
+  const tree = fragmentTree.get().uiElement.get("tree")
+  return tree
+}
+const classifier = new OBC.FragmentClassifier(viewer)
+const classificationWindow = new OBC.FloatingWindow(viewer)
+viewer.ui.add(classificationWindow)
+classificationWindow.title ="Model Groups"
+
+const classificationBtn = new OBC.Button(viewer)
+classificationBtn.materialIcon = "account_tree"
+classificationBtn.onClick.add(()=>{
+  classificationWindow.visible = !classificationWindow.visible
+  classificationBtn.active = classificationWindow.visible
+})
 
 const mainToolbar = new OBC.Toolbar(viewer);
 mainToolbar.addChild(
   ifcLoader.uiElement.get("main"),
-  propertiesProcessor.uiElement.get("main")
+  propertiesProcessor.uiElement.get("main"),
+  classificationBtn
 );    
 viewer.ui.addToolbar(mainToolbar);
 
 // Variable to store the last highlighted fragment's ID map
 let lastHighlightedFragmentIdMap: { [fragmentId: string]: any } = {};
+function zoomIn() {
+  const currentCamera = cameraComponent.activeCamera;
+  if (currentCamera instanceof THREE.PerspectiveCamera) {
+      // For Perspective Camera, modify FOV or position
+      currentCamera.fov /= 2; // Decreasing the FOV will create a zoom-in effect
+      currentCamera.updateProjectionMatrix();
+  } else if (currentCamera instanceof THREE.OrthographicCamera) {
+      // For Orthographic Camera, adjust the zoom
+      currentCamera.zoom *= 10;
+      currentCamera.updateProjectionMatrix();
+  }
+}
+function zoomOut() {
+  const currentCamera = cameraComponent.activeCamera;
+  if (currentCamera instanceof THREE.PerspectiveCamera) {
+    // For Perspective Camera, modify FOV or position
+    currentCamera.fov *= 2; // Increasing the FOV will create a zoom-out effect
+    currentCamera.updateProjectionMatrix();
+  } else if (currentCamera instanceof THREE.OrthographicCamera) {
+    // For Orthographic Camera, adjust the zoom
+    currentCamera.zoom /= 10;
+    currentCamera.updateProjectionMatrix();
+  }
+}
 
+// Modify the event handler function for the "keydown" event
+function handleZoomOutKeyPress(event:any) {
+  // Check if the pressed key is "a"
+  if (event.key === 'a') {
+    // Prevent default behavior
+    event.preventDefault();
+
+    // Call the zoomOut function
+    zoomOut();
+  }
+}
+function handleZoomInKeyPress(event:any) {
+  // Check if the pressed key is "z"
+  if (event.key === 'z') {
+    // Prevent default behavior
+    event.preventDefault();
+
+    // Call the zoomIn function
+    zoomIn();
+  }
+}
+document.addEventListener('keydown', handleZoomOutKeyPress);
+document.addEventListener('keydown', handleZoomInKeyPress);
+
+// Function to set navigation mode
+function setNavigationMode(navMode: 'Orbit' | 'FirstPerson' | 'Plan') {
+  cameraComponent.setNavigationMode(navMode);
+}
+
+// Add event listener for the navigation mode buttons
+document.addEventListener('DOMContentLoaded', () => {
+  const orbitButton = document.getElementById('orbitButton');
+  const firstPersonButton = document.getElementById('firstPersonButton');
+  const planButton = document.getElementById('planButton');
+  
+  if (orbitButton && firstPersonButton && planButton) {
+      orbitButton.addEventListener('click', () => setNavigationMode('Orbit'));
+      firstPersonButton.addEventListener('click', () => setNavigationMode('FirstPerson'));
+      planButton.addEventListener('click', () => setNavigationMode('Plan'));
+  } else {
+      console.error('One or more navigation mode buttons not found.');
+  }
+});
+cameraComponent.activeCamera.near = 0.1; // Closer objects than 0.1 units won't be visible
+cameraComponent.activeCamera.far = 100000; // Objects further than 10000 units won't be visible
+cameraComponent.activeCamera.updateProjectionMatrix();
 
 // Function to toggle the visibility of a selected fragment
 async function toggleFragmentVisibility() {
