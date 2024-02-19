@@ -3,11 +3,12 @@ import * as THREE from "three";
 
 const viewer = new OBC.Components();
 viewer.onInitialized.add(() => {});
-
+let scene;
 const sceneComponent = new OBC.SimpleScene(viewer);
 sceneComponent.setup();
 viewer.scene = sceneComponent;
-
+scene = sceneComponent.get();
+scene.background = new THREE.Color("white")
 const viewerContainer = document.getElementById(
   "webinar-sharepoint-viewer"
 ) as HTMLDivElement;
@@ -18,7 +19,19 @@ const rendererComponent = new OBC.PostproductionRenderer(
 viewer.renderer = rendererComponent;
 const postproduction = rendererComponent.postproduction;
 
+// Set navigation mode to orbit
+
 const cameraComponent = new OBC.OrthoPerspectiveCamera(viewer);
+cameraComponent.setNavigationMode("Orbit");
+const camera = cameraComponent.get(); // Retrieve the active camera
+if (camera instanceof THREE.PerspectiveCamera) {
+    // For Perspective Camera, adjust the far clipping plane
+    camera.far = 100000; // Adjust the value as needed to allow zooming in on distant objects
+} else if (camera instanceof THREE.OrthographicCamera) {
+    // For Orthographic Camera, adjust the zoom
+    camera.far = 100000; // Adjust the value as needed
+}
+
 viewer.camera = cameraComponent;
 
 const raycasterComponent = new OBC.SimpleRaycaster(viewer);
@@ -27,8 +40,8 @@ viewer.raycaster = raycasterComponent;
 viewer.init();
 postproduction.enabled = true;
 
-const grid = new OBC.SimpleGrid(viewer, new THREE.Color(0x666666));
-postproduction.customEffects.excludedMeshes.push(grid.get());
+//const grid = new OBC.SimpleGrid(viewer, new THREE.Color(0x666666));
+//postproduction.customEffects.excludedMeshes.push(grid.get());
 
 const ifcLoader = new OBC.FragmentIfcLoader(viewer);
 
@@ -47,7 +60,7 @@ highlighter.events.select.onClear.add(() => {
 
 ifcLoader.onIfcLoaded.add(async (model) => {
   console.log("Model loaded:", model);
-
+console.log(model.properties);
   propertiesProcessor.process(model);
   highlighter.events.select.onHighlight.add((selection) => {
       const fragmentID = Object.keys(selection)[0];
@@ -58,7 +71,7 @@ ifcLoader.onIfcLoaded.add(async (model) => {
   highlighter.update();
  
   onPropertiesLoaded(model)
-  
+  viewerContainer.ondblclick = () => clipper.create();
 });
 
 import { FragmentsGroup } from "bim-fragment"
@@ -66,9 +79,13 @@ import { FragmentsGroup } from "bim-fragment"
 async function onPropertiesLoaded(model: FragmentsGroup){
   //create properties for property window
   try{
-      classifier.byModel(model.name, model)
-      classifier.byStorey(model)
-      classifier.byEntity(model)
+      
+     
+     classifier.byIfcRel(model,160246688, "Aggregates")
+     classifier.byStorey(model)
+     classifier.get()
+   // const data = classifier.get()
+     //console.log(data);
       const tree = await createModelTree()
       await classificationWindow.slots.content.dispose(true)
       classificationWindow.addChild(tree)
@@ -82,7 +99,8 @@ async function onPropertiesLoaded(model: FragmentsGroup){
 async function createModelTree(){
   const fragmentTree = new OBC.FragmentTree(viewer)
   await fragmentTree.init()
-  await fragmentTree.update(["model","storeys", "entities"]) //
+  
+  await fragmentTree.update([ "Aggregates", "storeys"]) 
   fragmentTree.onHovered.add((fragmentMap) =>{
       highlighter.highlightByID("hover", fragmentMap)
   })
@@ -316,7 +334,6 @@ async function isolateFragment() {
 document.addEventListener('DOMContentLoaded', () => {
   const isolateButton = document.getElementById('isolateButton');
   if (isolateButton) {
-      console.log("Isolate button found"); // Add this line for debugging
       isolateButton.addEventListener('click', () => {
           isolateFragment();
       });
@@ -372,4 +389,25 @@ viewer.ui.addToolbar(mainToolbar);
 toggleButton.onClick.add(toggleFragmentVisibility);
 showAllButton.onClick.add(showAllHiddenFragments);
 isolateButton.onClick.add(isolateFragment);
-// Set the text of the buttons
+// main.ts
+
+const dimensions = new OBC.LengthMeasurement(viewer);
+dimensions.enabled = true;
+dimensions.snapDistance = 1;
+viewerContainer.ondblclick = () => dimensions.create();
+window.onkeydown = (event) => {
+  if (event.code === 'Delete') {
+      dimensions.delete();
+  } else if (event.code === 'Backspace') {
+      clipper.delete();
+  }
+};
+  mainToolbar.addChild(dimensions.uiElement.get("main")); 
+  const clipper = new OBC.EdgesClipper(viewer);
+  clipper.enabled = true;
+  const meshes = viewer.meshes
+  const shapeFill = new THREE.MeshBasicMaterial({color: 'lightgray', side: 2});
+  const shapeLine = new THREE.LineBasicMaterial({ color: 'black' });
+  const shapeOutline = new THREE.MeshBasicMaterial({color: 'black', opacity: 0.2, side: 2, transparent: true});
+clipper.styles.create('White shape, black lines', new Set(meshes), shapeLine, shapeFill, shapeOutline);
+

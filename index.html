@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OpenBIM App</title>
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-    />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     <link rel="stylesheet" href="src/styles.css" />
-  </head>
-  <body>
-    <div
-      id="webinar-sharepoint-viewer"
-      style="width: 100vw; height: 100vh"
-    ></div>
-    <script type="module" src="/src/main.ts"></script>
+</head>
+<body>
+  <div id="viewer-container">
+    <div id="webinar-sharepoint-viewer" class="viewer"></div>
+    <div id="ifc-viewer-placeholder" class="viewer" style="display: none;"></div> <!-- Assign the viewer class here -->
+</div>
+    <button id="loadIFCViewerButton" style="display: none;">Load IFC Viewer</button>
     <button id="toggleButton" style="display: none;">Toggle Fragment Visibility</button>
-  <button id="showAllButton" style="display: none;">Show All Hidden Fragments</button>
-  <button id="isolateButton" style="display: none;">Isolate</button>
-  
-  <button id = "orbitButton"  style="display: none;"> orbitButton</button>
-  <button id = "firstPersonButton" style="display: none;" > firstPersonButton</button>
-  <button id = "planButton" style="display: none;"> planButton</button>
-  </body>
+    <button id="showAllButton" style="display: none;">Show All Hidden Fragments</button>
+    <button id="isolateButton" style="display: none;">Isolate</button>
+    <button id="orbitButton" style="display: none;"> orbitButton</button>
+    <button id="firstPersonButton" style="display: none;"> firstPersonButton</button>
+    <button id="planButton" style="display: none;"> planButton</button>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
 </html>
