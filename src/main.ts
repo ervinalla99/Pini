@@ -131,6 +131,21 @@ const classifier = new OBC.FragmentClassifier(viewer)
 const classificationWindow = new OBC.FloatingWindow(viewer)
 viewer.ui.add(classificationWindow)
 classificationWindow.title ="Model Groups"
+classificationWindow.domElement.style.position = "absolute";
+classificationWindow.domElement.style.left = "0px"; // Set the left position to 
+classificationWindow.domElement.style.top = "0px"; // Set the top position to 
+classificationWindow.domElement.style.height = "500px"
+classificationWindow.domElement.style.width = "400px"
+
+  // Simulate a click on the property button
+  const propertyButton = propertiesProcessor.uiElement.get("main").domElement;
+  propertyButton.click();
+const propertiesWindowDOMElement = propertiesProcessor.uiElement.get("propertiesWindow").domElement;
+propertiesWindowDOMElement.style.position = "absolute";
+propertiesWindowDOMElement.style.left = "0px"; // Set the left position to 
+propertiesWindowDOMElement.style.top = "501px"; // Set the top position to 
+propertiesWindowDOMElement.style.height = "820px"
+propertiesWindowDOMElement.style.width = "400px"
 
 const classificationBtn = new OBC.Button(viewer)
 classificationBtn.materialIcon = "account_tree"
