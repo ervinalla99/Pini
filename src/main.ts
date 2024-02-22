@@ -8,7 +8,7 @@ const sceneComponent = new OBC.SimpleScene(viewer);
 sceneComponent.setup();
 viewer.scene = sceneComponent;
 scene = sceneComponent.get();
-scene.background = new THREE.Color("white")
+scene.background = new THREE.Color("#202932");
 const viewerContainer = document.getElementById(
   "webinar-sharepoint-viewer"
 ) as HTMLDivElement;
@@ -72,6 +72,14 @@ console.log(model.properties);
  
   onPropertiesLoaded(model)
   viewerContainer.ondblclick = () => clipper.create();
+  const culler = new OBC.ScreenCuller(viewer);
+viewerContainer.addEventListener("mouseup", () => culler.needsUpdate = true);
+viewerContainer.addEventListener("wheel", () => culler.needsUpdate = true);
+for(const fragment of model.items) {
+culler.add(fragment.mesh);
+}
+culler.needsUpdate = true;
+
 });
 
 import { FragmentsGroup } from "bim-fragment"
@@ -79,33 +87,42 @@ import { FragmentsGroup } from "bim-fragment"
 async function onPropertiesLoaded(model: FragmentsGroup){
   //create properties for property window
   try{
-      
-     
-     classifier.byIfcRel(model,160246688, "Aggregates")
+     classifier.byModel(model.name, model)
      classifier.byStorey(model)
+     classifier.byEntity(model)
+     //classifier.byIfcRel(model,4097777520,"Site")
+     classifier.byIfcRel(model,3242617779,"Storeys")
+     classifier.byIfcRel(model,160246688,"aggregates")
+     classifier.byIfcRel(model,781010003,"Element Type")
+
+     //classifier.byIfcRel(model,2655215786,"Material")
      classifier.get()
    // const data = classifier.get()
      //console.log(data);
       const tree = await createModelTree()
       await classificationWindow.slots.content.dispose(true)
       classificationWindow.addChild(tree)
-
-      
      
   } catch (error){
       alert(error)
   }
 }
+
 async function createModelTree(){
   const fragmentTree = new OBC.FragmentTree(viewer)
   await fragmentTree.init()
-  
-  await fragmentTree.update([ "Aggregates", "storeys"]) 
-  fragmentTree.onHovered.add((fragmentMap) =>{
-      highlighter.highlightByID("hover", fragmentMap)
+  const categories = [
+    "Storeys",  
+    "entities",
+    "Element Type",  
+];
+  await fragmentTree.update(categories);
+
+  fragmentTree.onHovered.add((filter) =>{
+      highlighter.highlightByID("hover", filter)
   })
-  fragmentTree.onSelected.add((fragmentMap)=>{
-      highlighter.highlightByID("select", fragmentMap)
+  fragmentTree.onSelected.add((filter)=>{
+      highlighter.highlightByID("select", filter,true, true)
   })
   const tree = fragmentTree.get().uiElement.get("tree")
   return tree
@@ -182,27 +199,27 @@ document.addEventListener('keydown', handleZoomOutKeyPress);
 document.addEventListener('keydown', handleZoomInKeyPress);
 
 // Function to set navigation mode
-function setNavigationMode(navMode: 'Orbit' | 'FirstPerson' | 'Plan') {
-  cameraComponent.setNavigationMode(navMode);
-}
+//function setNavigationMode(navMode: 'Orbit' | 'FirstPerson' | 'Plan') {
+//  cameraComponent.setNavigationMode(navMode);
+//}
 
 // Add event listener for the navigation mode buttons
-document.addEventListener('DOMContentLoaded', () => {
-  const orbitButton = document.getElementById('orbitButton');
-  const firstPersonButton = document.getElementById('firstPersonButton');
-  const planButton = document.getElementById('planButton');
+//document.addEventListener('DOMContentLoaded', () => {
+//  const orbitButton = document.getElementById('orbitButton');
+//  const firstPersonButton = document.getElementById('firstPersonButton');
+//  const planButton = document.getElementById('planButton');
   
-  if (orbitButton && firstPersonButton && planButton) {
-      orbitButton.addEventListener('click', () => setNavigationMode('Orbit'));
-      firstPersonButton.addEventListener('click', () => setNavigationMode('FirstPerson'));
-      planButton.addEventListener('click', () => setNavigationMode('Plan'));
-  } else {
-      console.error('One or more navigation mode buttons not found.');
-  }
-});
-cameraComponent.activeCamera.near = 0.1; // Closer objects than 0.1 units won't be visible
-cameraComponent.activeCamera.far = 100000; // Objects further than 10000 units won't be visible
-cameraComponent.activeCamera.updateProjectionMatrix();
+//  if (orbitButton && firstPersonButton && planButton) {
+//      orbitButton.addEventListener('click', () => setNavigationMode('Orbit'));
+//      firstPersonButton.addEventListener('click', () => setNavigationMode('FirstPerson'));
+//      planButton.addEventListener('click', () => setNavigationMode('Plan'));
+//  } else {
+     // console.error('One or more navigation mode buttons not found.');
+//  }
+//});
+//cameraComponent.activeCamera.near = 0.1; // Closer objects than 0.1 units won't be visible
+//cameraComponent.activeCamera.far = 100000; // Objects further than 10000 units won't be visible
+//cameraComponent.activeCamera.updateProjectionMatrix();
 
 // Function to toggle the visibility of a selected fragment
 async function toggleFragmentVisibility() {
@@ -281,22 +298,22 @@ async function showAllHiddenFragments() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const toggleButton = document.getElementById('toggleButton');
-    if (toggleButton) {
-        toggleButton.addEventListener('click', toggleFragmentVisibility);
-    } else {
-        console.error('Button with ID "toggleButton" not found.');
-    }
+// document.addEventListener('DOMContentLoaded', () => {
+  //   const toggleButton = document.getElementById('toggleButton');
+  //   if (toggleButton) {
+      //   toggleButton.addEventListener('click', toggleFragmentVisibility);
+  //   } else {
+      //   console.error('Button with ID "toggleButton" not found.');
+   //  }
 
     // Button to show all hidden fragments
-    const showAllButton = document.getElementById('showAllButton');
-    if (showAllButton) {
-        showAllButton.addEventListener('click', showAllHiddenFragments);
-    } else {
-        console.error('Button with ID "showAllButton" not found.');
-    }
-});
+   // const showAllButton = document.getElementById('showAllButton');
+   //  if (showAllButton) {
+     //    showAllButton.addEventListener('click', showAllHiddenFragments);
+   //  } else {
+   //      console.error('Button with ID "showAllButton" not found.');
+   //  }
+// });
 
 // Function to isolate the selected fragment
 async function isolateFragment() {
@@ -370,30 +387,30 @@ const toggleButton = new OBC.Button(viewer, {
   tooltip: "Toggle visibility",
 });
 
-const showAllButton = new OBC.Button(viewer, {
-  tooltip: "Show all hidden fragments",
-});
+// const showAllButton = new OBC.Button(viewer, {
+  // tooltip: "Show all hidden fragments",
+// });
 
 const isolateButton = new OBC.Button(viewer, {
   tooltip: "Isolate fragments",
 });
 // Set the text content of the buttons
 toggleButton.domElement.textContent = "Hide";
-showAllButton.domElement.textContent = "Show All";
+// showAllButton.domElement.textContent = "Show All";
 isolateButton.domElement.textContent = "Isolate";
 // Add the buttons to the mainToolbar
-mainToolbar.addChild(toggleButton, showAllButton, isolateButton);
+mainToolbar.addChild(toggleButton, isolateButton);
 
 // Add the mainToolbar to the viewer's UI
 viewer.ui.addToolbar(mainToolbar);
 toggleButton.onClick.add(toggleFragmentVisibility);
-showAllButton.onClick.add(showAllHiddenFragments);
+// showAllButton.onClick.add(showAllHiddenFragments);
 isolateButton.onClick.add(isolateFragment);
 // main.ts
 
 const dimensions = new OBC.LengthMeasurement(viewer);
 dimensions.enabled = true;
-dimensions.snapDistance = 1;
+dimensions.snapDistance = 0;
 viewerContainer.ondblclick = () => dimensions.create();
 window.onkeydown = (event) => {
   if (event.code === 'Delete') {
@@ -402,7 +419,7 @@ window.onkeydown = (event) => {
       clipper.delete();
   }
 };
-  mainToolbar.addChild(dimensions.uiElement.get("main")); 
+ 
   const clipper = new OBC.EdgesClipper(viewer);
   clipper.enabled = true;
   const meshes = viewer.meshes
@@ -410,4 +427,40 @@ window.onkeydown = (event) => {
   const shapeLine = new THREE.LineBasicMaterial({ color: 'black' });
   const shapeOutline = new THREE.MeshBasicMaterial({color: 'black', opacity: 0.2, side: 2, transparent: true});
 clipper.styles.create('White shape, black lines', new Set(meshes), shapeLine, shapeFill, shapeOutline);
+// Set the opacity of the clipper plane material to 0
+//clipper.styles.update('White shape, black lines', { opacity: 0 });
 
+// Create the button
+const resetButton = new OBC.Button(viewer, {
+  tooltip: "Reset",
+});
+
+// Set the text content of the button
+resetButton.domElement.textContent = "Reset";
+
+// Add the button to the mainToolbar
+mainToolbar.addChild(resetButton);
+mainToolbar.addChild(dimensions.uiElement.get("main")); 
+// Add event listener to the reset button
+resetButton.onClick.add(() => {
+  // Show all fragments
+  showAllHiddenFragments();
+
+  // Delete all dimensions
+  dimensions.deleteAll();
+
+  // Delete all clippers
+  clipper.deleteAll();
+});
+// Find the dimensions button element
+const dimensionsButton = dimensions.uiElement.get("main").domElement;
+
+// Create a new click event
+const clickEvent = new MouseEvent("click", {
+  bubbles: true,
+  cancelable: true,
+  view: window
+});
+
+// Dispatch the click event on the dimensions button element
+dimensionsButton.dispatchEvent(clickEvent);
