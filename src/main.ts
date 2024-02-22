@@ -153,12 +153,12 @@ classificationBtn.onClick.add(()=>{
   classificationWindow.visible = !classificationWindow.visible
   classificationBtn.active = classificationWindow.visible
 })
-
+// propertiesProcessor.uiElement.get("main"),
+// classificationBtn                           if buttons are needed inside the toolbar
 const mainToolbar = new OBC.Toolbar(viewer);
 mainToolbar.addChild(
   ifcLoader.uiElement.get("main"),
-  propertiesProcessor.uiElement.get("main"),
-  classificationBtn
+
 );    
 viewer.ui.addToolbar(mainToolbar);
 
