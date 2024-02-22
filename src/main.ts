@@ -147,21 +147,105 @@ propertiesWindowDOMElement.style.top = "501px"; // Set the top position to
 propertiesWindowDOMElement.style.height = "820px"
 propertiesWindowDOMElement.style.width = "400px"
 
-const classificationBtn = new OBC.Button(viewer)
-classificationBtn.materialIcon = "account_tree"
-classificationBtn.onClick.add(()=>{
-  classificationWindow.visible = !classificationWindow.visible
-  classificationBtn.active = classificationWindow.visible
-})
+//const classificationBtn = new OBC.Button(viewer)
+//classificationBtn.materialIcon = "account_tree"
+//classificationBtn.onClick.add(()=>{
+  //classificationWindow.visible = !classificationWindow.visible
+  //classificationBtn.active = classificationWindow.visible
+//})
 // propertiesProcessor.uiElement.get("main"),
 // classificationBtn                           if buttons are needed inside the toolbar
+
+// Create the help window
+const help = new OBC.FloatingWindow(viewer);
+help.title = "Help";
+help.visible = false; // Set initial visibility to false
+const helpDOMElement = help.domElement;
+// Set CSS styles to position the help window in the middle
+helpDOMElement.style.position = "absolute";
+helpDOMElement.style.left = "50%";
+helpDOMElement.style.top = "50%";
+helpDOMElement.style.transform = "translate(-50%, -50%)"; // Center the window
+helpDOMElement.style.width = "1000px";
+helpDOMElement.style.height = "700px";
+// Create a div element to contain the help text
+const helpText = document.createElement('div');
+helpText.innerHTML = `
+<div style="margin-left: 20px;"> <!-- Add margin to the left side -->
+    <p>Welcome to PINI IFC Viewer v10!</p>
+    
+    <p><strong style="text-decoration: underline;">Overview:</strong></p>
+    <p>The PINI IFC Viewer is a web-based application designed for viewing IFC (Industry Foundation Classes) models in 3D. It leverages modern OpenBim web technologies and libraries to provide a user-friendly interface for visualizing and interacting with complex architectural and engineering models.</p>
+    
+    <p><strong style="text-decoration: underline;">Loading IFC model:</strong></p>
+    <ul>
+        <li>Click the IFC Loader button to open the source of your IFC model.</li>
+        <li>The application uses the WebIFC library for parsing and loading IFC files.</li>
+    </ul>
+    
+    <p><strong style="text-decoration: underline;">Navigation:</strong></p>
+    <ul>
+        <li>Use the mouse to orbit around the model.</li>
+        <li>Press 'Z' to zoom in and 'A' to zoom out.</li>
+    </ul>
+    
+    <p><strong style="text-decoration: underline;">Visibility:</strong></p>
+    <ul>
+        <li>Select a fragment by clicking on it to toggle its visibility.</li>
+        <li>Click "Hide" or Press 'H' to toggle visibility of the selected fragment.</li>
+    </ul>
+    
+    <p><strong style="text-decoration: underline;">Isolation:</strong></p>
+    <ul>
+        <li>Click 'Isolate' or press 'I' to hide all fragments except the selected one.</li>
+    </ul>
+    
+    <p><strong style="text-decoration: underline;">Measurements:</strong></p>
+    <ul>
+        <li>Click on the Measurement button to measure the length between two points on the model.</li>
+        <li>Place the mouse cursor over the dimension line and Press 'Delete' to delete a measurement.</li>
+        <li>Press 'Esc' to exit the function.</li>
+    </ul>
+    
+    <p><strong style="text-decoration: underline;">Clipping:</strong></p>
+    <ul>
+        <li>Create a clipping plane by double clicking over the desired face. The clipping plane is created orthogonally to the chosen face.</li>
+        <li>Select and press 'Backspace' to delete a clipping plane, or click "Reset" to delete all.</li>
+    </ul>
+    
+    <p><strong style="text-decoration: underline;">Reset:</strong></p>
+    <ul>
+        <li>Click 'Reset' to reset the model view, dimensions, and clippings.</li>
+    </ul>
+    
+    <p><strong style="text-decoration: underline;">Libraries Used:</strong></p>
+    <p>The application utilizes open-source libraries such as OpenBIM Components and Three.js for rendering and interacting with 3D models in the browser.</p>
+    
+    <p><strong style="text-decoration: underline;">Running the App:</strong></p>
+    <p>The app runs directly in a web browser, eliminating the need for additional software installations. Simply open the app in a compatible web browser, load your IFC model, and start exploring!</p>
+    <p><strong style="text-decoration: underline;">GitHub Repository:</strong></p>
+    <p>For more details on how the app is constructed and to access the source code, please visit the GitHub repository link: <a href="https://github.com/ervinalla99/pini" target="_blank" style="text-decoration: underline;">https://github.com/ervinalla99/pini</a>.</p>
+</div>
+`;
+// Append the help text to the help window DOM element
+helpDOMElement.appendChild(helpText);
+// Add the help window to the viewer
+viewer.ui.add(help);
+
+// Create the HelpButton
+const HelpButton = new OBC.Button(viewer);
+HelpButton.domElement.textContent = "?";
+HelpButton.onClick.add(() => {
+    help.visible = !help.visible;
+    help.active = help.visible;
+});
+
 const mainToolbar = new OBC.Toolbar(viewer);
 mainToolbar.addChild(
+  HelpButton,
   ifcLoader.uiElement.get("main"),
-
 );    
 viewer.ui.addToolbar(mainToolbar);
-
 // Variable to store the last highlighted fragment's ID map
 let lastHighlightedFragmentIdMap: { [fragmentId: string]: any } = {};
 function zoomIn() {

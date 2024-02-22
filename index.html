@@ -6,8 +6,36 @@
     <title>OpenBIM App</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     <link rel="stylesheet" href="src/styles.css" />
+    <style>
+        #app-title {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .logo-container {
+          position: fixed; /* Fixed position to the viewport */
+          right: 10px; /* Align to the right side */
+          bottom: 10px; /* Align to the bottom side */
+          z-index: 1000; /* Higher index to ensure it's on top */
+      }
+
+      .logo-container img {
+          display: block; /* Remove any default inline spacing */
+          max-width: 200px; /* Maximum width for the logo */
+          max-height: 200px; /* Maximum height for the logo */
+      }
+    </style>
 </head>
 <body>
+</div>
+<!-- Logo at the bottom right corner -->
+<div class="logo-container">
+  <img src="logo.png" alt="Viewer Logo"/>
+</div>
+    <div id="app-title">PINI IFC VIEWER v10</div>
   <div id="viewer-container">
     <div id="webinar-sharepoint-viewer" class="viewer"></div>
     <div id="ifc-viewer-placeholder" class="viewer" style="display: none;"></div> <!-- Assign the viewer class here -->

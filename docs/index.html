@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OpenBIM App</title>
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-    />
-    <script type="module" crossorigin src="assets/index-e45a2f9a.js"></script>
-    <link rel="stylesheet" href="assets/index-233b81cf.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    
     <style>
-      .logo-container {
+        #app-title {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .logo-container {
           position: fixed; /* Fixed position to the viewport */
           right: 10px; /* Align to the right side */
           bottom: 10px; /* Align to the bottom side */
@@ -24,18 +28,28 @@
           max-height: 200px; /* Maximum height for the logo */
       }
     </style>
-  </head>
-  <body>
-    <div
-      id="webinar-sharepoint-viewer"
-      style="width: 100vw; height: 100vh"
-    ></div>
-    <!-- Logo at the bottom right corner -->
-    <div class="logo-container">
-      <img src="logo.png" alt="Viewer Logo"/>
-    </div>
+  <script type="module" crossorigin src="/assets/index-2cf507ee.js"></script>
+  <link rel="stylesheet" href="/assets/index-233b81cf.css">
+</head>
+<body>
+</div>
+<!-- Logo at the bottom right corner -->
+<div class="logo-container">
+  <img src="/assets/logo-c3b2dfee.png" alt="Viewer Logo"/>
+</div>
+    <div id="app-title">PINI IFC VIEWER v10</div>
+  <div id="viewer-container">
+    <div id="webinar-sharepoint-viewer" class="viewer"></div>
+    <div id="ifc-viewer-placeholder" class="viewer" style="display: none;"></div> <!-- Assign the viewer class here -->
+</div>
+    <button id="loadIFCViewerButton" style="display: none;">Load IFC Viewer</button>
     <button id="toggleButton" style="display: none;">Toggle Fragment Visibility</button>
-  <button id="showAllButton" style="display: none;">Show All Hidden Fragments</button>
-  <button id="isolateButton" style="display: none;">Isolate</button>
-  </body>
+    <button id="showAllButton" style="display: none;">Show All Hidden Fragments</button>
+    <button id="isolateButton" style="display: none;">Isolate</button>
+    <button id="orbitButton" style="display: none;"> orbitButton</button>
+    <button id="firstPersonButton" style="display: none;"> firstPersonButton</button>
+    <button id="planButton" style="display: none;"> planButton</button>
+
+    
+</body>
 </html>
