@@ -130,12 +130,12 @@ async function createModelTree(){
 const classifier = new OBC.FragmentClassifier(viewer)
 const classificationWindow = new OBC.FloatingWindow(viewer)
 viewer.ui.add(classificationWindow)
-classificationWindow.title ="Model Groups"
+classificationWindow.title = "Model Groups";
 classificationWindow.domElement.style.position = "absolute";
-classificationWindow.domElement.style.left = "0px"; // Set the left position to 
-classificationWindow.domElement.style.top = "0px"; // Set the top position to 
-classificationWindow.domElement.style.height = "500px"
-classificationWindow.domElement.style.width = "400px"
+classificationWindow.domElement.style.left = "0px"; // Set the left position to 0px
+classificationWindow.domElement.style.top = "0px"; // Set the top position to 0px
+classificationWindow.domElement.style.width = "16%"; // Set the width to % of the viewport width
+classificationWindow.domElement.style.height = "38vh"; // Set the height to % of the viewport height
 
   // Simulate a click on the property button
   const propertyButton = propertiesProcessor.uiElement.get("main").domElement;
@@ -143,9 +143,9 @@ classificationWindow.domElement.style.width = "400px"
 const propertiesWindowDOMElement = propertiesProcessor.uiElement.get("propertiesWindow").domElement;
 propertiesWindowDOMElement.style.position = "absolute";
 propertiesWindowDOMElement.style.left = "0px"; // Set the left position to 
-propertiesWindowDOMElement.style.top = "501px"; // Set the top position to 
-propertiesWindowDOMElement.style.height = "820px"
-propertiesWindowDOMElement.style.width = "400px"
+propertiesWindowDOMElement.style.top = "38vh"; // Set the top position to 
+propertiesWindowDOMElement.style.height = "62vh"
+propertiesWindowDOMElement.style.width = "16%"
 
 //const classificationBtn = new OBC.Button(viewer)
 //classificationBtn.materialIcon = "account_tree"
@@ -166,8 +166,8 @@ helpDOMElement.style.position = "absolute";
 helpDOMElement.style.left = "50%";
 helpDOMElement.style.top = "50%";
 helpDOMElement.style.transform = "translate(-50%, -50%)"; // Center the window
-helpDOMElement.style.width = "1000px";
-helpDOMElement.style.height = "700px";
+helpDOMElement.style.width = "55%";
+helpDOMElement.style.height = "65%";
 // Create a div element to contain the help text
 const helpText = document.createElement('div');
 helpText.innerHTML = `
@@ -242,7 +242,7 @@ HelpButton.onClick.add(() => {
 
 const mainToolbar = new OBC.Toolbar(viewer);
 mainToolbar.addChild(
-  HelpButton,
+  
   ifcLoader.uiElement.get("main"),
 );    
 viewer.ui.addToolbar(mainToolbar);
@@ -495,8 +495,10 @@ const isolateButton = new OBC.Button(viewer, {
 });
 // Set the text content of the buttons
 toggleButton.domElement.textContent = "Hide";
+toggleButton.domElement.title = "or Press H";
 // showAllButton.domElement.textContent = "Show All";
 isolateButton.domElement.textContent = "Isolate";
+isolateButton.domElement.title = "or Press I";
 // Add the buttons to the mainToolbar
 mainToolbar.addChild(toggleButton, isolateButton);
 
@@ -533,13 +535,19 @@ clipper.styles.create('White shape, black lines', new Set(meshes), shapeLine, sh
 const resetButton = new OBC.Button(viewer, {
   tooltip: "Reset",
 });
+const SectionButton = new OBC.Button(viewer, {
+  tooltip: "To create a section plan double click over the face of a fragment.",
+});
+SectionButton.domElement.title = "Double click over the face of a fragment.";
+SectionButton.domElement.textContent = "Section Plan";
 
 // Set the text content of the button
 resetButton.domElement.textContent = "Reset";
 
 // Add the button to the mainToolbar
 mainToolbar.addChild(resetButton);
-mainToolbar.addChild(dimensions.uiElement.get("main")); 
+mainToolbar.addChild(SectionButton);
+mainToolbar.addChild(dimensions.uiElement.get("main"),HelpButton); 
 // Add event listener to the reset button
 resetButton.onClick.add(() => {
   // Show all fragments
@@ -553,7 +561,6 @@ resetButton.onClick.add(() => {
 });
 // Find the dimensions button element
 const dimensionsButton = dimensions.uiElement.get("main").domElement;
-
 // Create a new click event
 const clickEvent = new MouseEvent("click", {
   bubbles: true,
@@ -563,3 +570,5 @@ const clickEvent = new MouseEvent("click", {
 
 // Dispatch the click event on the dimensions button element
 dimensionsButton.dispatchEvent(clickEvent);
+// Function to set the center of orbit at the selected fragment
+	//
