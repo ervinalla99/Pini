@@ -540,7 +540,32 @@ const SectionButton = new OBC.Button(viewer, {
 });
 SectionButton.domElement.title = "Double click over the face of a fragment.";
 SectionButton.domElement.textContent = "Section Plan";
-
+const sectionWindow = new OBC.FloatingWindow(viewer);
+sectionWindow.title = "How to";
+sectionWindow.visible = false; // Set initial visibility to false
+const sectionWindowDOMElement = sectionWindow.domElement;
+// Set CSS styles to position the help window in the middle
+sectionWindowDOMElement.style.position = "absolute";
+sectionWindowDOMElement.style.left = "50%";
+sectionWindowDOMElement.style.top = "50%";
+sectionWindowDOMElement.style.transform = "translate(-50%, -50%)"; // Center the window
+sectionWindowDOMElement.style.width = "25%";
+sectionWindowDOMElement.style.height = "20%";
+// Create a div element to contain the help text
+const sectionWindowDOMElementtext = document.createElement('div');
+sectionWindowDOMElementtext.innerHTML = `
+<div style="margin-left: 20px;"> <!-- Add margin to the left side -->
+    <p>To create a section plan double click over the face of a fragment.</p>
+    </div>
+`;
+// Append the help text to the help window DOM element
+sectionWindowDOMElement.appendChild(sectionWindowDOMElementtext);
+// Add the help window to the viewer
+viewer.ui.add(sectionWindow);
+SectionButton.onClick.add(() => {
+  sectionWindow.visible = !sectionWindow.visible;
+  sectionWindow.active = sectionWindow.visible;
+});
 // Set the text content of the button
 resetButton.domElement.textContent = "Reset";
 
