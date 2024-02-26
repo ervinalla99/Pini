@@ -56,6 +56,7 @@ highlighter.setup();
 const propertiesProcessor = new OBC.IfcPropertiesProcessor(viewer);
 highlighter.events.select.onClear.add(() => {
   propertiesProcessor.cleanPropertiesList();
+  
 });
 
 ifcLoader.onIfcLoaded.add(async (model) => {
@@ -102,7 +103,8 @@ async function onPropertiesLoaded(model: FragmentsGroup){
       const tree = await createModelTree()
       await classificationWindow.slots.content.dispose(true)
       classificationWindow.addChild(tree)
-     
+      await styler.setup();
+      await styler.update();
   } catch (error){
       alert(error)
   }
@@ -172,7 +174,7 @@ helpDOMElement.style.height = "65%";
 const helpText = document.createElement('div');
 helpText.innerHTML = `
 <div style="margin-left: 20px;"> <!-- Add margin to the left side -->
-    <p>Welcome to PINI IFC Viewer v10!</p>
+    <p>Welcome to PINI IFC Viewer v1.0!</p>
     
     <p><strong style="text-decoration: underline;">Overview:</strong></p>
     <p>The PINI IFC Viewer is a web-based application designed for viewing IFC (Industry Foundation Classes) models in 3D. It leverages modern OpenBim web technologies and libraries to provide a user-friendly interface for visualizing and interacting with complex architectural and engineering models.</p>
@@ -186,7 +188,7 @@ helpText.innerHTML = `
     <p><strong style="text-decoration: underline;">Navigation:</strong></p>
     <ul>
         <li>Use the mouse to orbit around the model.</li>
-        <li>Press 'Z' to zoom in and 'A' to zoom out.</li>
+        <li>Press '1' to zoom in and '2' to zoom out.</li>
     </ul>
     
     <p><strong style="text-decoration: underline;">Visibility:</strong></p>
@@ -197,7 +199,7 @@ helpText.innerHTML = `
     
     <p><strong style="text-decoration: underline;">Isolation:</strong></p>
     <ul>
-        <li>Click 'Isolate' or press 'I' to hide all fragments except the selected one.</li>
+        <li>Click 'Isolate' or press 'Shift' to hide all fragments except the selected one.</li>
     </ul>
     
     <p><strong style="text-decoration: underline;">Measurements:</strong></p>
@@ -212,10 +214,14 @@ helpText.innerHTML = `
         <li>Create a clipping plane by double clicking over the desired face. The clipping plane is created orthogonally to the chosen face.</li>
         <li>Select and press 'Backspace' to delete a clipping plane, or click "Reset" to delete all.</li>
     </ul>
-    
+    <p><strong style="text-decoration: underline;">Clipping Styles:</strong></p>
+    <ul>
+        <li>Click the Clipping Styles button to edit the desired section plan style.</li>
+        <li>You can edit the fill color and thickness of the lines in the clipping plane. Make sure the element categories</li>
+        <li> of the IFC model are added to the "Categories" list. Example: "IFCBUILDINGELEMENTPROXY", "IFCBEAM", etc.	</li>
     <p><strong style="text-decoration: underline;">Reset:</strong></p>
     <ul>
-        <li>Click 'Reset' to reset the model view, dimensions, and clippings.</li>
+        <li>Click 'Reset' to reset the model visibility, dimensions, and clippings.</li>
     </ul>
     
     <p><strong style="text-decoration: underline;">Libraries Used:</strong></p>
@@ -225,6 +231,9 @@ helpText.innerHTML = `
     <p>The app runs directly in a web browser, eliminating the need for additional software installations. Simply open the app in a compatible web browser, load your IFC model, and start exploring!</p>
     <p><strong style="text-decoration: underline;">GitHub Repository:</strong></p>
     <p>For more details on how the app is constructed and to access the source code, please visit the GitHub repository link: <a href="https://github.com/ervinalla99/pini" target="_blank" style="text-decoration: underline;">https://github.com/ervinalla99/pini</a>.</p>
+    <p><strong style="text-decoration: underline;">Documentation:</strong></p>
+    <p>If you to learn more about this App's documentation, please visit the link: <a href="https://people.thatopen.com/c/documentation/" target="_blank" style="text-decoration: underline;">https://people.thatopen.com/c/documentation/</a>.</p>
+    
 </div>
 `;
 // Append the help text to the help window DOM element
@@ -233,18 +242,20 @@ helpDOMElement.appendChild(helpText);
 viewer.ui.add(help);
 
 // Create the HelpButton
-const HelpButton = new OBC.Button(viewer);
-HelpButton.domElement.textContent = "?";
+const HelpButton = new OBC.Button(viewer, {
+  tooltip: "Help",
+  materialIconName: "help", // Icon name from Google Icons
+});
 HelpButton.onClick.add(() => {
     help.visible = !help.visible;
     help.active = help.visible;
 });
-
+const ifcLoaderToolbar = new OBC.Toolbar(viewer);
+ifcLoaderToolbar.addChild(ifcLoader.uiElement.get("main"));
 const mainToolbar = new OBC.Toolbar(viewer);
-mainToolbar.addChild(
-  
-  ifcLoader.uiElement.get("main"),
-);    
+viewer.ui.addToolbar(ifcLoaderToolbar);
+const visibilityToolbar = new OBC.Toolbar(viewer);
+viewer.ui.addToolbar(visibilityToolbar);  
 viewer.ui.addToolbar(mainToolbar);
 // Variable to store the last highlighted fragment's ID map
 let lastHighlightedFragmentIdMap: { [fragmentId: string]: any } = {};
@@ -276,7 +287,7 @@ function zoomOut() {
 // Modify the event handler function for the "keydown" event
 function handleZoomOutKeyPress(event:any) {
   // Check if the pressed key is "a"
-  if (event.key === 'a') {
+  if (event.key === '2') {
     // Prevent default behavior
     event.preventDefault();
 
@@ -286,7 +297,7 @@ function handleZoomOutKeyPress(event:any) {
 }
 function handleZoomInKeyPress(event:any) {
   // Check if the pressed key is "z"
-  if (event.key === 'z') {
+  if (event.key === '1') {
     // Prevent default behavior
     event.preventDefault();
 
@@ -457,9 +468,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Add keydown event listener
       document.addEventListener('keydown', (event) => {
           // Convert the pressed key to lowercase for comparison
-          const keyPressed = event.key.toLowerCase();
+          //const keyPressed = event.key.toLowerCase();
           // Check if the pressed key is "i"
-          if (keyPressed === 'i') {
+          if (event.key === 'Shift') {
               // Trigger click event on isolate button
               isolateButton.click();
           }
@@ -483,7 +494,8 @@ window.addEventListener("thatOpen", async (event: any) => {
 
 
 const toggleButton = new OBC.Button(viewer, {
-  tooltip: "Toggle visibility",
+  tooltip: "Hide the selected fragment (or Press 'H')",
+  materialIconName: "visibility_off", // Icon name from Google Icons
 });
 
 // const showAllButton = new OBC.Button(viewer, {
@@ -491,19 +503,19 @@ const toggleButton = new OBC.Button(viewer, {
 // });
 
 const isolateButton = new OBC.Button(viewer, {
-  tooltip: "Isolate fragments",
+  tooltip: "Isolate (or Press 'Shift')",
+  materialIconName: "filter_center_focus",
 });
 // Set the text content of the buttons
-toggleButton.domElement.textContent = "Hide";
-toggleButton.domElement.title = "or Press H";
+//toggleButton.domElement.textContent = "Hide";
+//toggleButton.domElement.title = "or Press H";
 // showAllButton.domElement.textContent = "Show All";
-isolateButton.domElement.textContent = "Isolate";
-isolateButton.domElement.title = "or Press I";
+//isolateButton.domElement.textContent = "Isolate";
+//isolateButton.domElement.title = "or Press I";
 // Add the buttons to the mainToolbar
-mainToolbar.addChild(toggleButton, isolateButton);
+//mainToolbar.addChild(toggleButton, isolateButton);
 
 // Add the mainToolbar to the viewer's UI
-viewer.ui.addToolbar(mainToolbar);
 toggleButton.onClick.add(toggleFragmentVisibility);
 // showAllButton.onClick.add(showAllHiddenFragments);
 isolateButton.onClick.add(isolateFragment);
@@ -534,6 +546,7 @@ clipper.styles.create('White shape, black lines', new Set(meshes), shapeLine, sh
 // Create the button
 const resetButton = new OBC.Button(viewer, {
   tooltip: "Reset",
+  materialIconName: "autorenew",
 });
 const SectionButton = new OBC.Button(viewer, {
   tooltip: "To create a section plan double click over the face of a fragment.",
@@ -549,8 +562,8 @@ sectionWindowDOMElement.style.position = "absolute";
 sectionWindowDOMElement.style.left = "50%";
 sectionWindowDOMElement.style.top = "50%";
 sectionWindowDOMElement.style.transform = "translate(-50%, -50%)"; // Center the window
-sectionWindowDOMElement.style.width = "25%";
-sectionWindowDOMElement.style.height = "20%";
+sectionWindowDOMElement.style.width = "30%";
+sectionWindowDOMElement.style.height = "25%";
 // Create a div element to contain the help text
 const sectionWindowDOMElementtext = document.createElement('div');
 sectionWindowDOMElementtext.innerHTML = `
@@ -567,11 +580,18 @@ SectionButton.onClick.add(() => {
   sectionWindow.active = sectionWindow.visible;
 });
 // Set the text content of the button
-resetButton.domElement.textContent = "Reset";
+//resetButton.domElement.textContent = "Reset";
 
 // Add the button to the mainToolbar
-mainToolbar.addChild(resetButton);
+
+postproduction.customEffects.outlineEnabled = true;
+const styler = new OBC.FragmentClipStyler(viewer);
+
+
+visibilityToolbar.addChild(toggleButton, isolateButton,resetButton);
+
 mainToolbar.addChild(SectionButton);
+mainToolbar.addChild(styler.uiElement.get("mainButton"));
 mainToolbar.addChild(dimensions.uiElement.get("main"),HelpButton); 
 // Add event listener to the reset button
 resetButton.onClick.add(() => {
@@ -586,6 +606,7 @@ resetButton.onClick.add(() => {
 });
 // Find the dimensions button element
 const dimensionsButton = dimensions.uiElement.get("main").domElement;
+dimensionsButton.title = "Measure length between 2 points";
 // Create a new click event
 const clickEvent = new MouseEvent("click", {
   bubbles: true,
@@ -595,5 +616,20 @@ const clickEvent = new MouseEvent("click", {
 
 // Dispatch the click event on the dimensions button element
 dimensionsButton.dispatchEvent(clickEvent);
-// Function to set the center of orbit at the selected fragment
-	//
+
+// Create a new OBC.Button for the refresh functionality
+const refreshButton = new OBC.Button(viewer, {
+  tooltip: "Refresh",
+  materialIconName: "refresh", // Material icon name for the refresh button
+});
+
+// Add an onClick event handler to reload the page when the button is clicked
+refreshButton.onClick.add(() => {
+  // Reload the page
+  location.reload();
+});
+
+// Add the refresh button to the main toolbar
+ifcLoaderToolbar.addChild(refreshButton);
+
+
