@@ -56,7 +56,13 @@ highlighter.setup();
 const propertiesProcessor = new OBC.IfcPropertiesProcessor(viewer);
 highlighter.events.select.onClear.add(() => {
   propertiesProcessor.cleanPropertiesList();
-  
+  function clearPropertiesList() {
+    const propertiesListElement = document.getElementById('PropertiesList'); // Replace with the correct ID or selector
+    if (propertiesListElement) {
+      propertiesListElement.innerHTML = ''; // Clear the content
+    }
+  }
+  clearPropertiesList()
 });
 
 ifcLoader.onIfcLoaded.add(async (model) => {
@@ -66,6 +72,7 @@ console.log(model.properties);
   highlighter.events.select.onHighlight.add((selection) => {
       const fragmentID = Object.keys(selection)[0];
       const expressID = Number([...selection[fragmentID]][0]);
+      
       propertiesProcessor.renderProperties(model, expressID);
   });
 
@@ -114,6 +121,7 @@ async function createModelTree(){
   const fragmentTree = new OBC.FragmentTree(viewer)
   await fragmentTree.init()
   const categories = [
+    "model" ,
     "Storeys",  
     "entities",
     "Element Type",  
