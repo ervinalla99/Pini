@@ -111,7 +111,19 @@ async function onPropertiesLoaded(model: FragmentsGroup){
       await classificationWindow.slots.content.dispose(true)
       classificationWindow.addChild(tree)
       await styler.setup();
-      await styler.update();
+      
+      const styleCardIds = Object.keys(styler.styleCards);
+      // Assuming you want to access the first style card ID in the array
+const styleCardId = styleCardIds[0]; // You can replace 0 with the index you want
+const styleCard = styler.styleCards[styleCardId];
+const entities = classifier.get().entities;
+const entityTypes = Object.keys(entities);
+styleCard.categories.value = entityTypes.join(", ");
+await styler.update();
+styleCard.name.value = "All entitity types";
+styleCard.lineColor.value = "black";
+styleCard.lineThickness.value = 0.1;
+console.log(styler.styleCards[styleCardId]); // Array of style card IDs
   } catch (error){
       alert(error)
   }
@@ -543,13 +555,7 @@ window.onkeydown = (event) => {
  
   const clipper = new OBC.EdgesClipper(viewer);
   clipper.enabled = true;
-  const meshes = viewer.meshes
-  const shapeFill = new THREE.MeshBasicMaterial({color: 'lightgray', side: 2});
-  const shapeLine = new THREE.LineBasicMaterial({ color: 'black' });
-  const shapeOutline = new THREE.MeshBasicMaterial({color: 'black', opacity: 0.2, side: 2, transparent: true});
-clipper.styles.create('White shape, black lines', new Set(meshes), shapeLine, shapeFill, shapeOutline);
-// Set the opacity of the clipper plane material to 0
-//clipper.styles.update('White shape, black lines', { opacity: 0 });
+clipper.material.opacity = 0;
 
 // Create the button
 const resetButton = new OBC.Button(viewer, {
@@ -593,8 +599,8 @@ SectionButton.onClick.add(() => {
 // Add the button to the mainToolbar
 
 postproduction.customEffects.outlineEnabled = true;
+// Define a new class that extends FragmentClipStyler
 const styler = new OBC.FragmentClipStyler(viewer);
-
 
 visibilityToolbar.addChild(toggleButton, isolateButton,resetButton);
 
